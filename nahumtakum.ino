@@ -2,7 +2,7 @@
 #include "nahumtakum.h"
 
 clicli cli;
-nahumtakum nahumtakum(5, 6, 7);
+nahumtakum nahumtakum(3, 4, 5);
 
 void setup() {
   cli.begin();
@@ -12,5 +12,7 @@ void setup() {
 void loop() {
   cli.run();
   nahumtakum.run();//updates the gyro values
-  nahumtakum.tumble();
+  delay(0);
+  nahumtakum.tumble(1, 5, 0.05);
+  delay(0);
 }
