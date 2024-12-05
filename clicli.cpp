@@ -3,36 +3,33 @@
                     CLI Software for Arduino
 
                A Simple Command Line Interface 
-                
+  Example functions:              
               Feature                |  CLI Usage
 ___________________________________________________
  Digial Write HIGH to a specific pin |  h (pin)
  Digial Write LOW to a specific pin  |  l (pin)
- Analog Write to pwm ports           |  a (pin) (value)
+ Shoot command                       |  s (angle)
  Digital Read                        |  r (pin)
- Analog Read                         |  e (pin)
- all pins SET                        |  q
- all pins RESET                      |  w 
+ Analog Read                         |  e (pin) 
 
                
       by Gal Arbel
       Oct 2022
-
-      Credits: Shimi Mahluf 
-
 */
 
 
 #include "clicli.h"
 #include "Arduino.h"
+#include "HardwareSerial.h"
 
 const unsigned int MAX_MESSAGE_LENGTH = 64;
 
-clicli::clicli() {}
+clicli::clicli(ev3lego &mylego) : mylego(mylego), number(7) {
+    // Constructor body, if needed
+}
 
 void clicli::begin() {
-  Serial.begin(115200);
-  Serial.println("\nenjoy using clicli!");
+  //
 }
 void clicli::run() {
 
@@ -56,23 +53,23 @@ void clicli::run() {
       int argindex = 0;
       char cmd;
       char delim[] = " ";
-	     char tmpmsg[MAX_MESSAGE_LENGTH];
+       char tmpmsg[MAX_MESSAGE_LENGTH];
        strcpy(tmpmsg,message);
        message_pos = 0;
        message[message_pos] = '\0';     //Add null character to string
 
         char *ptr = strtok(tmpmsg, delim);
-	      while(ptr != NULL)
-	       {
-		      //Serial.printf("'%s'\n", ptr);
+        while(ptr != NULL)
+         {
+          //Serial.printf("'%s'\n", ptr);
           if (argindex == 0) {
             cmd = ptr[0];
           }
           command[argindex] = atoi(ptr);   
           //Serial.println(command[argindex]);
           argindex++;  
-		      ptr = strtok(NULL, delim);
-	       } 
+          ptr = strtok(NULL, delim);
+         } 
 
       switch (cmd) {
        case 'h': //Set port to HIGH
@@ -83,6 +80,7 @@ void clicli::run() {
         Serial.println(" is SET");   
         delay(1000);
         break;
+        
        case 'l': // Set port to LOW
         pinMode(command[1],OUTPUT);
         digitalWrite(command[1],LOW);
@@ -92,16 +90,6 @@ void clicli::run() {
         delay(1000);
         break;
        
-       case 'a': // analog Write to pwm ports
-        pinMode(command[1],OUTPUT);
-        analogWrite(command[1],command[2]);
-        Serial.print("Writing "); 
-        Serial.print(command[2]);   
-        Serial.print(" to pin ");  
-        Serial.println(command[1]);   
-        delay(1000);
-        break;
-
        case 'r': // digital read
         pinMode(command[1],INPUT);
         Serial.print("Pin "); 
@@ -110,8 +98,13 @@ void clicli::run() {
         Serial.println(digitalRead(command[1]));   
         delay(1000);
         break;
+       
+       case 'a':
+        
+        break;
+       
 
-        case 'e': // analog read
+      case 'e': // analog read
         pinMode(command[1],INPUT);
         Serial.print("Pin "); 
         Serial.print(command[1]);   
@@ -119,30 +112,32 @@ void clicli::run() {
         Serial.println(analogRead(command[1]));   
         delay(1000);
         break;
+
+      case 'g'://print debug info
+        mylego.godegreesp(command[1], 2000, command[2],command[3], command[4]);
+        mylego.motgo(0);
+        break;
+
+      case 'v':
+        mylego.motgo(command[1]);
+        break;
+      
+      case 'z':
+        mylego.gomm(command[1], 1000);
+        break;
+
+      case 'p':
+       mylego.godegreesp(command[1],command[2],command[3],command[4],0);
+       Serial.print(command[1]);
+       break;
        
-       case 'q': //Set port to HIGH
-        for(int i = 2; i < 14; i++){
-          pinMode(i ,OUTPUT);
-          digitalWrite(i, HIGH);
+       case 'q':
+       mylego.godegrees(command[1],command[2]);
+       break;
 
-        }
-        Serial.println("all Pin are SET"); 
-        delay(1000);
-        break;
-      case 'w': //Set port to HIGH
-        for(int i = 13; i > 1; i--){
-          pinMode(i ,OUTPUT);
-          digitalWrite(i, LOW);
-
-        }
-        Serial.println("all Pin are RESET"); 
-        delay(1000);
-        break;
        message_pos = 0;     //Reset for the next message
       }
    }
-   delay (60);
-   
+   delay (60); 
  } 
-
 }
